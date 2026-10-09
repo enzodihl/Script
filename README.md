@@ -1546,3 +1546,88 @@ if propertySearch then
         showProperties()
     end)
 end
+
+--==================================================
+-- PART 4 - BOTAO SET
+--==================================================
+
+local setButton = Instance.new("TextButton")
+setButton.Name = "SetButton"
+setButton.Size = UDim2.new(0, 70, 0, 30)
+setButton.Position = UDim2.new(1, -80, 0, 5)
+setButton.BackgroundColor3 = Color3.fromRGB(50, 155, 90)
+setButton.TextColor3 = Color3.new(1, 1, 1)
+setButton.Text = "SET"
+setButton.TextSize = 14
+setButton.Font = Enum.Font.GothamBold
+setButton.BorderSizePixel = 0
+setButton.ZIndex = 20
+setButton.Parent = propsFrame
+
+local setCorner = Instance.new("UICorner")
+setCorner.CornerRadius = UDim.new(0, 6)
+setCorner.Parent = setButton
+
+setButton.MouseButton1Click:Connect(function()
+    local selectedObject = selected and selected[#selected]
+
+    if not selectedObject then
+        setButton.Text = "SELECIONE"
+        task.delay(1.5, function()
+            if setButton and setButton.Parent then
+                setButton.Text = "SET"
+            end
+        end)
+        return
+    end
+
+    local valueBox
+    local propertyName
+
+    for _, item in ipairs(propsScroll:GetDescendants()) do
+        if item:IsA("TextBox") then
+            local name = item:GetAttribute("PropertyName")
+
+            if name and item:IsFocused() then
+                valueBox = item
+                propertyName = name
+                break
+            end
+        end
+    end
+
+    if not valueBox or not propertyName then
+        setButton.Text = "CLIQUE NO VALOR"
+        task.delay(1.5, function()
+            if setButton and setButton.Parent then
+                setButton.Text = "SET"
+            end
+        end)
+        return
+    end
+
+    local success, err = pcall(function()
+        local oldValue = selectedObject[propertyName]
+        local newValue = convertPropertyValue(
+            propertyName,
+            oldValue,
+            valueBox.Text
+        )
+
+        selectedObject[propertyName] = newValue
+    end)
+
+    if success then
+        setButton.Text = "APLICADO!"
+        pcall(showProperties)
+    else
+        setButton.Text = "FALHOU"
+        warn("[SET] Erro ao aplicar propriedade:", err)
+    end
+
+    task.delay(1.5, function()
+        if setButton and setButton.Parent then
+            setButton.Text = "SET"
+        end
+    end)
+end)
